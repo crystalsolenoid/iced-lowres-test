@@ -19,7 +19,7 @@ fn update(counter: &mut u64, message: Message) {
     }
 }
 fn view(counter: &u64) -> Element<Message, iced::Theme, LowRes> {
-    container(()).into()
+    container(text("hello")).into()
     /* !
     let counter_row = row![
         button("Decrement").on_press(Message::Decrement),
