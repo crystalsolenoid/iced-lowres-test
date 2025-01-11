@@ -4,5 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bytemuck = "1.21.0"
+glyphon = { package = "iced_glyphon", version = "0.6" } # Temporary `glyphon` fork
 iced = { version = "0.13.1", features = ["advanced"] }
 iced_wgpu = "0.13.5"
+log = "0.4.22"
+rustc-hash = "2.1.0"
+wgpu = "0.19"
