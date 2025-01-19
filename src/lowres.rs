@@ -1,19 +1,19 @@
 use iced::advanced::renderer::{self, Quad};
-use iced::advanced::{text, Text};
 use iced::{Background, Color, Pixels, Point, Rectangle, Transformation};
+pub use iced_wgpu::graphics::Text;
 use iced_wgpu::graphics::{self, compositor, error, Compositor};
 use iced_wgpu::wgpu;
 
 use crate::engine::Engine;
+use crate::{text, triangle};
 
 pub struct LowRes {
     default_font: iced::Font,
     default_text_size: Pixels,
-    layers: iced_wgpu::layer::Stack,
-    //triangle_storage: iced_wgpu::triangle::Storage,
-    //text_storage: text::Storage,
-    //text_viewport: text::Viewport,
-
+    layers: crate::layer::Stack,
+    triangle_storage: triangle::Storage,
+    text_storage: text::Storage,
+    text_viewport: text::Viewport,
     // TODO: Centralize all the image feature handling
     //#[cfg(any(feature = "svg", feature = "image"))]
     //image_cache: std::cell::RefCell<image::Cache>,
@@ -22,18 +22,17 @@ pub struct LowRes {
 impl LowRes {
     pub fn new(
         device: &wgpu::Device,
-        engine: &iced_wgpu::Engine,
+        engine: &Engine,
         default_font: iced::Font,
         default_text_size: Pixels,
     ) -> Self {
         Self {
             default_font,
             default_text_size,
-            layers: iced_wgpu::layer::Stack::new(),
-            //triangle_storage: triangle::Storage::new(),
-            //text_storage: text::Storage::new(),
-            //text_viewport: engine.text_pipeline.create_viewport(device),
-
+            layers: crate::layer::Stack::new(),
+            triangle_storage: triangle::Storage::new(),
+            text_storage: text::Storage::new(),
+            text_viewport: engine.text_pipeline.create_viewport(device),
             //#[cfg(any(feature = "svg", feature = "image"))]
             //image_cache: std::cell::RefCell::new(engine.create_image_cache(device)),
         }
@@ -41,7 +40,7 @@ impl LowRes {
 
     pub fn present<T: AsRef<str>>(
         &mut self,
-        engine: &mut iced_wgpu::Engine,
+        engine: &mut Engine,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         encoder: &mut wgpu::CommandEncoder,
@@ -249,7 +248,7 @@ impl renderer::Renderer for LowRes {
     fn clear(&mut self) {}
 }
 
-impl text::Renderer for LowRes {
+impl iced_wgpu::core::text::Renderer for LowRes {
     type Font = iced::Font;
     //    type Paragraph = dyn iced::advanced::text::Paragraph<Font = Self::Font>;
     type Paragraph = ();
@@ -284,7 +283,7 @@ impl text::Renderer for LowRes {
     }
     fn fill_text(
         &mut self,
-        _text: Text<String, Self::Font>,
+        _text: iced_wgpu::core::Text<String, Self::Font>,
         _position: Point,
         _color: Color,
         _clip_bounds: Rectangle,
@@ -303,7 +302,7 @@ pub struct LowResCompositor {
     queue: wgpu::Queue,
     format: wgpu::TextureFormat,
     alpha_mode: wgpu::CompositeAlphaMode,
-    engine: iced_wgpu::Engine,
+    engine: Engine,
     settings: iced_wgpu::Settings,
 }
 
@@ -535,13 +534,8 @@ impl LowResCompositor {
 
             match result {
                 Ok((device, queue)) => {
-                    let engine = iced_wgpu::Engine::new(
-                        &adapter,
-                        &device,
-                        &queue,
-                        format,
-                        settings.antialiasing,
-                    );
+                    let engine =
+                        Engine::new(&adapter, &device, &queue, format, settings.antialiasing);
 
                     return Ok(LowResCompositor {
                         instance,
