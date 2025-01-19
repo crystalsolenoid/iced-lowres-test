@@ -71,6 +71,73 @@ impl LowRes {
         encoder: &mut wgpu::CommandEncoder,
         viewport: &iced_wgpu::graphics::Viewport,
     ) {
+        let scale_factor = viewport.scale_factor() as f32;
+
+        self.text_viewport.update(queue, viewport.physical_size());
+
+        for layer in self.layers.iter_mut() {
+            if !layer.quads.is_empty() {
+                engine.quad_pipeline.prepare(
+                    device,
+                    encoder,
+                    &mut engine.staging_belt,
+                    &layer.quads,
+                    viewport.projection(),
+                    scale_factor,
+                );
+            }
+
+            if !layer.triangles.is_empty() {
+                engine.triangle_pipeline.prepare(
+                    device,
+                    encoder,
+                    &mut engine.staging_belt,
+                    &mut self.triangle_storage,
+                    &layer.triangles,
+                    Transformation::scale(scale_factor),
+                    viewport.physical_size(),
+                );
+            }
+
+            if !layer.primitives.is_empty() {
+                for instance in &layer.primitives {
+                    instance.primitive.prepare(
+                        device,
+                        queue,
+                        engine.format,
+                        &mut engine.primitive_storage,
+                        &instance.bounds,
+                        viewport,
+                    );
+                }
+            }
+
+            #[cfg(any(feature = "svg", feature = "image"))]
+            if !layer.images.is_empty() {
+                engine.image_pipeline.prepare(
+                    device,
+                    encoder,
+                    &mut engine.staging_belt,
+                    &mut self.image_cache.borrow_mut(),
+                    &layer.images,
+                    viewport.projection(),
+                    scale_factor,
+                );
+            }
+
+            if !layer.text.is_empty() {
+                engine.text_pipeline.prepare(
+                    device,
+                    queue,
+                    &self.text_viewport,
+                    encoder,
+                    &mut self.text_storage,
+                    &layer.text,
+                    layer.bounds,
+                    Transformation::scale(scale_factor),
+                );
+            }
+        }
     }
     fn render(
         &mut self,
@@ -238,14 +305,35 @@ impl LowRes {
         let _ = ManuallyDrop::into_inner(render_pass);
     }
 }
-
 impl renderer::Renderer for LowRes {
-    fn start_layer(&mut self, _bounds: Rectangle) {}
-    fn end_layer(&mut self) {}
-    fn start_transformation(&mut self, _transformation: Transformation) {}
-    fn end_transformation(&mut self) {}
-    fn fill_quad(&mut self, _quad: Quad, _background: impl Into<Background>) {}
-    fn clear(&mut self) {}
+    fn start_layer(&mut self, bounds: Rectangle) {
+        self.layers.push_clip(bounds);
+    }
+
+    fn end_layer(&mut self) {
+        self.layers.pop_clip();
+    }
+
+    fn start_transformation(&mut self, transformation: Transformation) {
+        self.layers.push_transformation(transformation);
+    }
+
+    fn end_transformation(&mut self) {
+        self.layers.pop_transformation();
+    }
+
+    fn fill_quad(
+        &mut self,
+        quad: iced_wgpu::core::renderer::Quad,
+        background: impl Into<Background>,
+    ) {
+        let (layer, transformation) = self.layers.current_mut();
+        layer.draw_quad(quad, background.into(), transformation);
+    }
+
+    fn clear(&mut self) {
+        self.layers.clear();
+    }
 }
 
 impl iced_wgpu::core::text::Renderer for LowRes {
