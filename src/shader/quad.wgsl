@@ -26,10 +26,11 @@ fn rounded_box_sdf(to_center: vec2<f32>, size: vec2<f32>, radius: f32) -> f32 {
 // Order matches CSS border radius attribute:
 // radii.x = top-left, radii.y = top-right, radii.z = bottom-right, radii.w = bottom-left
 fn select_border_radius(radii: vec4<f32>, position: vec2<f32>, center: vec2<f32>) -> f32 {
-    var rx = radii.x;
-    var ry = radii.y;
-    rx = select(radii.x, radii.y, position.x > center.x);
-    ry = select(radii.w, radii.z, position.x > center.x);
-    rx = select(rx, ry, position.y > center.y);
-    return rx;
+    //var rx = radii.x;
+    //var ry = radii.y;
+    //rx = select(radii.x, radii.y, position.x > center.x);
+    //ry = select(radii.w, radii.z, position.x > center.x);
+    //rx = select(rx, ry, position.y > center.y);
+    //return rx;
+    return 0.0;
 }

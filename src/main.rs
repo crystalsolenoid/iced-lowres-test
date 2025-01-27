@@ -9,7 +9,10 @@ use iced_lowres_test::lowres::LowRes;
 type Renderer = LowRes;
 
 fn main() -> iced::Result {
-    iced::run::<_, _, _, Renderer>("A cool counter", update, view)
+    iced::application::<_, _, _, Renderer>("pyx-rusterizer", update, view)
+        .window_size((200., 300.))
+        .scale_factor(|_| 4.)
+        .run()
 }
 
 fn update(counter: &mut u64, message: Message) {

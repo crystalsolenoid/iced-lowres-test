@@ -187,7 +187,7 @@ impl LowRes {
         #[cfg(any(feature = "svg", feature = "image"))]
         let image_cache = self.image_cache.borrow();
 
-        let scale_factor = viewport.scale_factor() as f32;
+        let scale_factor = dbg!(viewport.scale_factor() as f32);
         let physical_bounds =
             Rectangle::<f32>::from(Rectangle::with_size(viewport.physical_size()));
 

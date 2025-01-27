@@ -81,7 +81,7 @@ fn solid_fs_main(
         (input.pos + input.scale * 0.5).xy
     );
 
-    if (input.border_width > 0.0) {
+    if input.border_width > 0.0 {
         var internal_border: f32 = max(border_radius - input.border_width, 0.0);
 
         var internal_distance: f32 = distance_alg(
@@ -122,7 +122,7 @@ fn solid_fs_main(
             (input.pos + input.scale * 0.5).xy
         );
         let shadow_distance = max(rounded_box_sdf(input.position.xy - input.pos - input.shadow_offset - (input.scale / 2.0), input.scale / 2.0, shadow_radius), 0.);
-        
+
         let shadow_alpha = 1.0 - smoothstep(-input.shadow_blur_radius, input.shadow_blur_radius, shadow_distance);
         let shadow_color = input.shadow_color;
         let base_color = mix(

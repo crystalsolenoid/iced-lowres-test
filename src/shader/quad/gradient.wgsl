@@ -64,7 +64,7 @@ fn gradient_vs_main(input: GradientVertexInput) -> GradientVertexOutput {
 }
 
 fn random(coords: vec2<f32>) -> f32 {
-    return fract(sin(dot(coords, vec2(12.9898,78.233))) * 43758.5453);
+    return fract(sin(dot(coords, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
 /// Returns the current interpolated color with a max 8-stop gradient
@@ -90,25 +90,25 @@ fn gradient(
 
     var color: vec4<f32>;
 
-    let noise_granularity: f32 = 0.3/255.0;
+    let noise_granularity: f32 = 0.3 / 255.0;
 
     for (var i: i32 = 0; i < last_index; i++) {
         let curr_offset = offsets_arr[i];
-        let next_offset = offsets_arr[i+1];
+        let next_offset = offsets_arr[i + 1];
 
-        if (coord_offset <= offsets_arr[0]) {
+        if coord_offset <= offsets_arr[0] {
             color = colors_arr[0];
         }
 
-        if (curr_offset <= coord_offset && coord_offset <= next_offset) {
+        if curr_offset <= coord_offset && coord_offset <= next_offset {
             let from_ = colors_arr[i];
-            let to_ = colors_arr[i+1];
+            let to_ = colors_arr[i + 1];
             let factor = smoothstep(curr_offset, next_offset, coord_offset);
 
             color = interpolate_color(from_, to_, factor);
         }
 
-        if (coord_offset >= offsets_arr[last_index]) {
+        if coord_offset >= offsets_arr[last_index] {
             color = colors_arr[last_index];
         }
     }
@@ -146,7 +146,7 @@ fn gradient_fs_main(input: GradientVertexOutput) -> @location(0) vec4<f32> {
     //TODO could just pass this in to the shader but is probably more performant to just check it here
     var last_index = 7;
     for (var i: i32 = 0; i <= 7; i++) {
-        if (offsets[i] > 1.0) {
+        if offsets[i] > 1.0 {
             last_index = i - 1;
             break;
         }
@@ -163,7 +163,7 @@ fn gradient_fs_main(input: GradientVertexOutput) -> @location(0) vec4<f32> {
         (pos + scale * 0.5).xy
     );
 
-    if (input.border_width > 0.0) {
+    if input.border_width > 0.0 {
         var internal_border: f32 = max(border_radius - input.border_width, 0.0);
 
         var internal_distance: f32 = distance_alg(
@@ -192,7 +192,8 @@ fn gradient_fs_main(input: GradientVertexOutput) -> @location(0) vec4<f32> {
     var radius_alpha: f32 = 1.0 - smoothstep(
         max(border_radius - 0.5, 0.0),
         border_radius + 0.5,
-        dist);
+        dist
+    );
 
     return vec4<f32>(mixed_color.x, mixed_color.y, mixed_color.z, mixed_color.w * radius_alpha);
 }
